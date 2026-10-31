@@ -1,92 +1,70 @@
 # adk-gemma
 
-ADK agents talking to **Gemma on LM Studio** (OpenAI-compatible local API).
+Codelab: build ADK agents on **Gemma 4 running locally in LM Studio** (OpenAI-compatible API on `http://127.0.0.1:1234/v1`).
 
-Two agent folders:
+Slides: open [`index.html`](index.html) in a browser (DevFest Chengdu, EN + 简体中文).
 
-| Folder | Type | Role |
-|--------|------|------|
-| `normal_agent/` | `Agent` (LlmAgent) | Chat + `get_current_datetime` tool |
-| `workflow_agent/` | `SequentialAgent` | Planner → responder pipeline |
+## Steps
 
-Switch with `AGENT_KIND=normal` or `AGENT_KIND=workflow` in `.env`.
+| Folder | What it shows |
+|--------|---------------|
+| `step01_basic_agent/` | `Agent` + LiteLlm → LM Studio, with a `get_current_datetime` function tool |
+| `step02_mcp_agent/` | `McpToolset` connected to the Airbnb MCP server (`npx`) |
+| `step03_workflow_agent/` | ADK 2.x `Workflow`: planner → responder via `output_key` |
+| `step04_skills_agent/` | `SkillToolset` loading `skills/trip-itinerary` and `skills/packing-list` |
 
-## Project Structure
+Every agent uses the same model:
 
-```
-adk-gemma/
-├── normal_agent/      # Single chat agent
-├── workflow_agent/    # Sequential planner → responder
-├── shared/            # LiteLLM/LM Studio model + tools
-├── app/               # ADK entry (loads AGENT_KIND)
-├── tests/
-├── AGENTS.md
-└── pyproject.toml
+```python
+LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
 ```
 
 ## Requirements
 
-- **uv** — [Install](https://docs.astral.sh/uv/getting-started/installation/)
-- **agents-cli** — `uv tool install google-agents-cli`
-- **LM Studio** — load a Gemma model and start the local server (default `http://127.0.0.1:1234/v1`)
+- **LM Studio** with `google/gemma-4-e4b` downloaded
+- **Python** 3.11+
+- **Node.js** 18+ (only for `step02_mcp_agent`)
 
 ## Quick Start
 
-1. In LM Studio: load Gemma, start the server, note the model id (set `LMSTUDIO_MODEL` in `.env` if different from `gemma-3-4b-it`).
-
-2. Install packages:
+1. Start Gemma in LM Studio:
 
 ```bash
-agents-cli install
+lms get google/gemma-4-e4b
+lms load google/gemma-4-e4b
+lms server start
+curl http://localhost:1234/v1/models   # the "id" must match the model string above
 ```
 
-3. Pick an agent in `.env` (`AGENT_KIND=normal` or `workflow`), then:
+2. Install ADK and LiteLLM:
 
 ```bash
-agents-cli playground
-# or
-agents-cli run "ตอนนี้กี่โมงแล้ว"
+python3 -m venv .venv && source .venv/bin/activate
+pip install "google-adk>=2.2" "litellm>=1.84"
 ```
 
-## Commands
-
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `agents-cli install` | Install dependencies using uv                                                         |
-| `agents-cli playground` | Launch local development environment                                                  |
-| `agents-cli lint`    | Run code quality checks                                                               |
-| `agents-cli eval`    | Evaluate agent behavior (generate, grade, analyze, and more — see `agents-cli eval --help`) |
-| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        || [A2A Inspector](https://github.com/a2aproject/a2a-inspector) | Launch A2A Protocol Inspector                                                        |
-
-## 🛠️ Project Management
-
-| Command | What It Does |
-|---------|--------------|
-| `agents-cli scaffold enhance` | Add CI/CD pipelines and Terraform infrastructure |
-| `agents-cli infra cicd` | One-command setup of entire CI/CD pipeline + infrastructure |
-| `agents-cli scaffold upgrade` | Auto-upgrade to latest version while preserving customizations |
-
----
-
-## Development
-
-Edit your agent logic in `app/agent.py` and test with `agents-cli playground` - it auto-reloads on save.
-
-## Deployment
+3. Run the dev UI from the repo root and pick a `stepXX_*` agent in the top-left menu:
 
 ```bash
-gcloud config set project <your-project-id>
-agents-cli deploy
+adk web          # http://127.0.0.1:8000
+# or chat in the terminal
+adk run step01_basic_agent
 ```
 
-To add CI/CD and Terraform, run `agents-cli scaffold enhance`.
-To set up your production infrastructure, run `agents-cli infra cicd`.
+## Try these prompts
 
-## Observability
+| Agent | Prompt |
+|-------|--------|
+| `step01_basic_agent` | 成都现在几点？ |
+| `step02_mcp_agent` | 帮我找成都 11 月 15 日入住两晚的民宿，2 位成人 |
+| `step03_workflow_agent` | 帮我安排一个成都周末两日游 |
+| `step04_skills_agent` | 帮我规划成都 3 天行程 |
 
-Built-in telemetry exports to Cloud Trace, BigQuery, and Cloud Logging.
+## Troubleshooting
 
-## A2A Inspector
-
-This agent supports the [A2A Protocol](https://a2a-protocol.org/). Use the [A2A Inspector](https://github.com/a2aproject/a2a-inspector) to test interoperability.
-See the [A2A Inspector docs](https://github.com/a2aproject/a2a-inspector) for details.
+- **404 / model not found** — the model id doesn't match `GET /v1/models`; copy the exact id.
+- **Connection refused** — LM Studio server isn't running; `lms server start`.
+- **No tool calls** — use a tool-capable model and say in the instruction when to call the tool.
