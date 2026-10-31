@@ -55,7 +55,7 @@ select = [
 ignore = ["E501", "C901", "B006"] # ignore line too long, too complex
 
 [tool.ruff.lint.isort]
-known-first-party = ["step01_basic_agent", "step02_mcp_agent", "step03_workflow_agent"]
+known-first-party = ["step01_basic_agent", "step02_mcp_agent", "step03_workflow_agent", "step04_skills_agent", "step05_memory_agent"]
 
 [tool.ty]
 # ty is Astral's Rust-based type checker (same team as ruff/uv)
@@ -93,6 +93,6 @@ pythonpath = "."
 asyncio_default_fixture_loop_scope = "session"
 
 [tool.hatch.build.targets.wheel]
-packages = ["step01_basic_agent", "step02_mcp_agent", "step03_workflow_agent"]
+packages = ["step01_basic_agent", "step02_mcp_agent", "step03_workflow_agent", "step04_skills_agent", "step05_memory_agent"]
 
 

@@ -9,6 +9,7 @@ airbnb_tools = McpToolset(
             command="npx",
             args=["-y", "@openbnb/mcp-server-airbnb", "--ignore-robots-txt"],
         ),
+        timeout=30,
     ),
 )
 

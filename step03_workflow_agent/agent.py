@@ -1,5 +1,6 @@
-from google.adk.agents import Agent, SequentialAgent
+from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.workflow import START, Workflow
 
 model = LiteLlm(
     model="lm_studio/google/gemma-4-e4b",
@@ -21,8 +22,8 @@ responder = Agent(
     instruction="Use this plan:\n{plan}\n\nWrite the final answer for the user.",
 )
 
-root_agent = SequentialAgent(
+root_agent = Workflow(
     name="workflow_gemma_agent",
     description="Planner then responder.",
-    sub_agents=[planner, responder],
+    edges=[(START, planner, responder)],
 )

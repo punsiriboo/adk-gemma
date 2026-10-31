@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevFest Chengdu — Building Open-Source AI Agents with Google Gemma &amp; ADK</title>
+    <meta name="description" content="Bilingual (EN + 简体中文) codelab slides: Local LLM, Gemma 4 and Google ADK (Python) quick-start by Punsiri Boonyakiat." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --g-blue: #4285f4; --g-blue-dark: #1a73e8; --g-blue-bg: #e8f0fe;
+        --g-red: #ea4335; --g-red-bg: #fce8e6;
+        --g-yellow: #fbbc04; --g-yellow-dark: #e37400; --g-yellow-bg: #fef7e0;
+        --g-green: #34a853; --g-green-dark: #188038; --g-green-bg: #e6f4ea;
+        --bg-canvas: #f8f9fa; --bg-slide: #ffffff; --bg-code-header: #f1f3f4;
+        --border: #dadce0; --border-subtle: #e8eaed; --text: #202124; --muted: #5f6368;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', 'Google Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+        background-color: var(--bg-canvas);
+        background-image:
+          radial-gradient(circle at 12% 10%, rgba(66,133,244,.07) 0%, transparent 32%),
+          radial-gradient(circle at 88% 14%, rgba(234,67,53,.06) 0%, transparent 28%),
+          radial-gradient(circle at 85% 88%, rgba(52,168,83,.07) 0%, transparent 32%),
+          radial-gradient(circle at 15% 85%, rgba(251,188,4,.08) 0%, transparent 30%),
+          radial-gradient(#dadce0 1px, transparent 1px);
+        background-size: 100% 100%,100% 100%,100% 100%,100% 100%,24px 24px;
+        color: var(--text); min-height: 100vh; display: flex; flex-direction: column;
+      }
+      .google-color-bar { display: grid; grid-template-columns: repeat(4,1fr); height: 4px; width: 100%; position: sticky; top: 0; z-index: 30; }
+      .google-color-bar span:nth-child(1){background:var(--g-blue)} .google-color-bar span:nth-child(2){background:var(--g-red)}
+      .google-color-bar span:nth-child(3){background:var(--g-yellow)} .google-color-bar span:nth-child(4){background:var(--g-green)}
+      .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 28px; border-bottom:1px solid var(--border);
+        background:rgba(255,255,255,.95); backdrop-filter:blur(10px); position:sticky; top:4px; z-index:20; box-shadow:0 1px 3px rgba(60,64,67,.06); }
+      .brand { display:flex; align-items:center; gap:14px; min-width:0; }
+      .gdg-logo { display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--border); padding:6px 12px; border-radius:999px; box-shadow:0 1px 2px rgba(60,64,67,.08); flex-shrink:0; }
+      .gdg-logo svg { width:26px; height:18px; flex-shrink:0; }
+      .gdg-logo-text { font-size:13px; font-weight:800; letter-spacing:-.01em; }
+      .gdg-logo-city { font-weight:600; color:var(--muted); margin-left:3px; }
+      .brand-title { font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .brand-sub { font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .brand-sub code { background:var(--g-blue-bg); color:var(--g-blue-dark); padding:1px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; }
+      .controls { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+      .btn { background:#fff; border:1px solid var(--border); color:var(--text); padding:7px 14px; border-radius:999px; font:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s ease; box-shadow:0 1px 2px rgba(60,64,67,.05); }
+      .btn:hover:not(:disabled) { background:var(--g-blue-bg); border-color:var(--g-blue); color:var(--g-blue-dark); }
+      .btn:disabled { opacity:.4; cursor:not-allowed; }
+      .counter { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:var(--g-blue-dark); background:var(--g-blue-bg); padding:5px 12px; border-radius:999px; }
+      .progress-track { height:4px; background:var(--border-subtle); width:100%; }
+      .progress-bar { height:100%; background:linear-gradient(90deg,var(--g-blue) 0%,var(--g-red) 35%,var(--g-yellow) 70%,var(--g-green) 100%); transition:width .25s ease; }
+      .stage { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:18px 24px 42px; }
+      .slide { display:none; width:100%; max-width:1180px; background:var(--bg-slide); border:1px solid var(--border); border-radius:24px; padding:26px 36px 22px;
+        box-shadow:0 1px 3px rgba(60,64,67,.08),0 12px 32px rgba(60,64,67,.07); position:relative; overflow:hidden; }
+      .slide::before { content:''; position:absolute; top:0; left:0; right:0; height:5px;
+        background:linear-gradient(90deg,var(--g-blue) 0 25%,var(--g-red) 25% 50%,var(--g-yellow) 50% 75%,var(--g-green) 75% 100%); }
+      .slide.active { display:block; animation:fade .22s ease; }
+      @keyframes fade { from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none} }
+      .slide-All .slide { display:block; margin-bottom:28px; animation:none; }
+      .slide-All .stage { flex-direction:column; align-items:center; }
+      .step-tag { display:inline-flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:var(--g-blue-dark);
+        background:var(--g-blue-bg); border:1px solid rgba(66,133,244,.3); padding:5px 14px; border-radius:999px; margin-bottom:14px; }
+      .step-tag::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--g-blue);
+        box-shadow:12px 0 0 var(--g-red),24px 0 0 var(--g-yellow),36px 0 0 var(--g-green); margin-right:38px; }
+      .step-tag.demo { color:var(--g-green-dark); background:var(--g-green-bg); border-color:rgba(52,168,83,.35); }
+      h1 { font-size:25px; font-weight:800; letter-spacing:-.02em; margin:0 0 4px; line-height:1.3; }
+      h1 code { background:var(--g-blue-bg); color:var(--g-blue-dark); padding:2px 10px; border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:20px; }
+      .h1-en { font-size:14px; font-weight:600; color:var(--muted); margin:0 0 12px; }
+      p.lead { margin:0 0 14px; color:var(--muted); font-size:14px; line-height:1.6; }
+      p.lead .en, .card .en { display:block; color:#80868b; font-size:12.5px; margin-top:2px; }
+      .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+      .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+      .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+      .grid-2 > *, .grid-3 > *, .grid-4 > * { min-width:0; }
+      @media (max-width:960px){ .grid-2,.grid-3,.grid-4{grid-template-columns:1fr} .brand-sub{display:none} .topbar{padding:10px 14px} .slide{padding:22px 18px 18px} }
+      .code-box { background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; box-shadow:0 1px 2px rgba(60,64,67,.04); }
+      .code-header { display:flex; align-items:center; justify-content:space-between; padding:6px 14px; background:var(--bg-code-header); border-bottom:1px solid var(--border);
+        font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:var(--g-blue-dark); }
+      .code-header > span { display:inline-flex; align-items:center; gap:8px; }
+      .code-header > span::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--g-red);
+        box-shadow:13px 0 0 var(--g-yellow),26px 0 0 var(--g-green); margin-right:28px; }
+      .copy-btn { background:#fff; border:1px solid var(--border); color:var(--text); border-radius:999px; padding:2px 10px; font:inherit; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s ease; }
+      .copy-btn:hover { background:var(--g-blue-bg); border-color:var(--g-blue); color:var(--g-blue-dark); }
+      .copy-btn.ok { background:var(--g-green-bg); border-color:var(--g-green); color:var(--g-green-dark); }
+      pre { margin:0; padding:11px 16px; overflow-x:auto; font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; line-height:1.5; color:#1f2937; background:#fff; }
+      pre .cm { color:#188038; font-style:italic; }
+      pre .out { color:#80868b; }
+      .steps-list { margin:0 0 14px; padding-left:20px; font-size:13.5px; line-height:1.7; }
+      .steps-list code, p.lead code, .card code, td code, .note code { background:var(--g-blue-bg); color:var(--g-blue-dark); padding:1px 6px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; }
+      .card { border:1px solid var(--border); border-radius:16px; padding:16px 18px; background:#fff; box-shadow:0 1px 2px rgba(60,64,67,.04); position:relative; }
+      .card h3 { margin:0 0 6px; font-size:15.5px; font-weight:800; display:flex; align-items:center; gap:8px; }
+      .card p { margin:0; font-size:13px; color:var(--muted); line-height:1.6; }
+      .card ul { margin:6px 0 0; padding-left:18px; font-size:13px; color:var(--muted); line-height:1.65; }
+      .card.blue{border-top:4px solid var(--g-blue)} .card.red{border-top:4px solid var(--g-red)} .card.yellow{border-top:4px solid var(--g-yellow)} .card.green{border-top:4px solid var(--g-green)}
+      .card.tint-blue{background:var(--g-blue-bg); border-color:rgba(66,133,244,.3)} .card.tint-yellow{background:var(--g-yellow-bg); border-color:rgba(251,188,4,.45)}
+      .card.tint-green{background:var(--g-green-bg); border-color:rgba(52,168,83,.35)}
+      .icon { width:30px; height:30px; border-radius:9px; display:inline-grid; place-items:center; font-size:16px; flex-shrink:0; }
+      .icon.blue{background:var(--g-blue-bg)} .icon.red{background:var(--g-red-bg)} .icon.yellow{background:var(--g-yellow-bg)} .icon.green{background:var(--g-green-bg)}
+      .note { margin:10px 0 0; padding:10px 14px; border-radius:12px; background:var(--g-yellow-bg); border:1px solid rgba(251,188,4,.45); font-size:12.5px; line-height:1.6; color:#5f4300; }
+      .note.blue { background:var(--g-blue-bg); border-color:rgba(66,133,244,.3); color:#174ea6; }
+      .note b { font-weight:800; }
+      /* Cover */
+      .cover { display:grid; grid-template-columns:1.35fr .9fr; gap:28px; align-items:center; padding:22px 6px 10px; }
+      .cover .kicker { display:inline-flex; gap:8px; align-items:center; font-weight:700; font-size:13px; color:var(--g-blue-dark); background:var(--g-blue-bg); padding:6px 14px; border-radius:999px; }
+      .cover h1.big { font-size:40px; line-height:1.18; margin:16px 0 10px; }
+      .cover h1.big .hl { background:linear-gradient(90deg,var(--g-blue),var(--g-green)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+      .cover .zh { font-size:22px; font-weight:700; color:#3c4043; margin:0 0 18px; line-height:1.45; }
+      .speaker { display:flex; gap:14px; align-items:center; margin-top:8px; }
+      .avatar { width:54px; height:54px; border-radius:50%; display:grid; place-items:center; font-weight:800; color:#fff; font-size:20px;
+        background:conic-gradient(var(--g-blue) 0 25%,var(--g-red) 0 50%,var(--g-yellow) 0 75%,var(--g-green) 0); }
+      .speaker b { display:block; font-size:16px; } .speaker span { font-size:13px; color:var(--muted); }
+      .badge-stack { display:grid; gap:12px; }
+      .badge-big { border-radius:20px; padding:18px 20px; border:1px solid var(--border); background:#fff; }
+      .badge-big .t { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+      .badge-big .v { font-size:20px; font-weight:800; margin-top:4px; }
+      /* Agenda */
+      .agenda { display:grid; gap:12px; margin-top:8px; }
+      .agenda-item { display:flex; align-items:center; gap:18px; padding:16px 20px; border:1px solid var(--border); border-radius:18px; background:#fff; }
+      .agenda-item .num { font-family:'JetBrains Mono',monospace; font-weight:800; font-size:22px; width:52px; height:52px; border-radius:16px; display:grid; place-items:center; color:#fff; flex-shrink:0; }
+      .agenda-item .zh-t { font-size:18px; font-weight:800; } .agenda-item .en-t { font-size:13px; color:var(--muted); }
+      /* Compare */
+      .vs { display:grid; grid-template-columns:1fr auto 1fr; gap:14px; align-items:stretch; }
+      .vs .mid { display:grid; place-items:center; font-weight:800; color:var(--muted); font-size:18px; }
+      .flow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; margin-top:8px; }
+      .flow .node { padding:6px 10px; border-radius:10px; background:#fff; border:1px solid var(--border); font-weight:600; }
+      .flow .arr { color:var(--muted); font-weight:800; }
+      blockquote.quote { margin:0 0 16px; padding:16px 20px; border-left:5px solid var(--g-yellow); background:var(--g-yellow-bg); border-radius:0 14px 14px 0; font-size:17px; line-height:1.6; font-weight:600; }
+      blockquote.quote mark { background:#fde293; padding:0 4px; border-radius:4px; }
+      blockquote.quote .en { display:block; font-size:13px; font-weight:500; color:var(--muted); margin-top:6px; }
+      /* ADK tiles */
+      .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+      .tile { font-size:12px; font-weight:700; padding:9px 10px; border-radius:10px; border:1px solid var(--border); background:#fff; text-align:center; }
+      .tile.hl { border:2px solid var(--g-yellow); background:var(--g-yellow-bg); }
+      .bars { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+      .bar { font-size:12px; font-weight:700; padding:8px; border-radius:10px; text-align:center; color:#fff; }
+      .steps7 { display:grid; gap:7px; counter-reset:s; }
+      .s7 { display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:12px; border:1px solid var(--border); background:#fff; font-size:13.5px; font-weight:700; }
+      .s7 .n { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:12px; font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+      .s7 small { font-weight:500; color:var(--muted); margin-left:auto; font-size:11.5px; font-family:'JetBrains Mono',monospace; }
+      .s7.skill { border:2px dashed var(--g-yellow); }
+      .skill-flow { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+      .sf { border-radius:14px; padding:12px; background:#fff; border:1px solid rgba(251,188,4,.6); }
+      .sf .k { font-size:12px; font-weight:800; color:var(--g-yellow-dark); }
+      .sf .t { font-size:14px; font-weight:800; margin:2px 0 4px; }
+      .sf code { font-size:11.5px; }
+      .sf p { margin:0; font-size:12px; color:var(--muted); line-height:1.5; }
+      table.tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+      table.tbl th, table.tbl td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border-subtle); vertical-align:top; }
+      table.tbl th { background:var(--bg-code-header); font-size:12px; color:var(--muted); }
+      table.tbl tr:last-child td { border-bottom:none; }
+      /* Architecture */
+      .arch { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; align-items:stretch; position:relative; }
+      .arch .box { border-radius:16px; padding:14px 12px; text-align:center; border:1px solid var(--border); background:#fff; position:relative; }
+      .arch .box b { display:block; font-size:14.5px; } .arch .box span { display:block; font-size:12px; color:var(--muted); margin-top:4px; line-height:1.45; }
+      .arch .box:not(:last-child)::after { content:'→'; position:absolute; right:-12px; top:50%; transform:translateY(-50%); font-weight:800; color:var(--muted); z-index:2; }
+      .ref-list { list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+      .ref-list li { border:1px solid var(--border); border-radius:14px; padding:12px 16px; background:#fff; display:flex; gap:12px; align-items:flex-start; }
+      .ref-list a { color:var(--g-blue-dark); font-weight:700; text-decoration:none; word-break:break-all; }
+      .ref-list a:hover { text-decoration:underline; }
+      .ref-list small { display:block; color:var(--muted); font-size:12.5px; margin-top:2px; }
+      .slide-footer { max-width:1180px; width:100%; margin:-30px auto 28px; padding:0 28px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+      .gdg-pills { display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; }
+      .gdg-pill { font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; }
+      .gdg-pill.blue{background:var(--g-blue-bg);color:var(--g-blue-dark)} .gdg-pill.red{background:var(--g-red-bg);color:var(--g-red)}
+      .gdg-pill.yellow{background:var(--g-yellow-bg);color:var(--g-yellow-dark)} .gdg-pill.green{background:var(--g-green-bg);color:var(--g-green-dark)}
+      .kbd { font-family:'JetBrains Mono',monospace; font-size:11px; border:1px solid var(--border); border-bottom-width:2px; border-radius:6px; padding:1px 6px; background:#fff; }
+      /* Codelab */
+      .step-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+      .step-head h1 { margin:0 0 4px; }
+      .dur { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:var(--g-yellow-dark); background:var(--g-yellow-bg); border:1px solid rgba(251,188,4,.45); padding:3px 10px; border-radius:999px; }
+      .checkpoint { margin:10px 0 0; padding:10px 14px; border-radius:12px; background:var(--g-green-bg); border:1px solid rgba(52,168,83,.4); border-left:5px solid var(--g-green); font-size:12.5px; line-height:1.6; color:#0d5223; }
+      .checkpoint code { background:#fff; color:var(--g-green-dark); padding:1px 6px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; }
+      @media print { .topbar,.progress-track,.google-color-bar{display:none} .slide{display:block!important; page-break-after:always; box-shadow:none} }
+    </style>
+  </head>
+  <body>
+    <div class="google-color-bar"><span></span><span></span><span></span><span></span></div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="gdg-logo" title="DevFest Chengdu">
+          <svg viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M23.5 7L8.5 19.5" stroke="#EA4335" stroke-width="6.5" stroke-linecap="round" />
+            <path d="M8.5 20.5L23.5 33" stroke="#4285F4" stroke-width="6.5" stroke-linecap="round" />
+            <path d="M40.5 7L55.5 19.5" stroke="#FBBC04" stroke-width="6.5" stroke-linecap="round" />
+            <path d="M55.5 20.5L40.5 33" stroke="#34A853" stroke-width="6.5" stroke-linecap="round" />
+          </svg>
+          <span class="gdg-logo-text">DevFest<span class="gdg-logo-city">Chengdu</span></span>
+        </div>
+        <div style="min-width:0">
+          <div class="brand-title">Codelab · 构建开源 AI 智能体 — Google Gemma &amp; ADK</div>
+          <div class="brand-sub">Punsiri Boonyakiat • DevFest 成都 • <code>lm_studio/google/gemma-4-e4b</code> • Google ADK (Python) + LM Studio</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="prevBtn" onclick="changeSlide(-1)" title="← Arrow Left">← 上一页</button>
+        <span class="counter" id="slideCounter">1 / 17</span>
+        <button class="btn" id="nextBtn" onclick="changeSlide(1)" title="Arrow Right →">下一页 →</button>
+        <button class="btn" id="modeBtn" onclick="toggleAllMode()">全部滚动 Scroll All</button>
+      </div>
+    </header>
+    <div class="progress-track"><div class="progress-bar" id="progressBar" style="width:5.5%"></div></div>
+
+    <main class="stage" id="stage">
+
+      <!-- 1 COVER -->
+      <section class="slide active" data-title="Cover">
+        <span class="step-tag" data-label="Codelab · 封面 Cover"></span>
+        <div class="cover">
+          <div>
+            <span class="kicker">🐼 DevFest 成都 · Chengdu, China · Codelab</span>
+            <h1 class="big">Building Open-Source AI Agents with <span class="hl">Google Gemma &amp; ADK</span></h1>
+            <p class="zh">构建开源 AI 智能体<br />基于 Google Gemma 与 ADK</p>
+            <div class="speaker">
+              <div class="avatar">B</div>
+              <div><b>Punsiri Boonyakiat (Beat)</b><span>首席数据工程师 Lead Data Engineer @ Central Food Retail</span></div>
+            </div>
+            <p class="lead" style="margin-top:18px">
+              跟着 9 个步骤，在自己的电脑上用 <code>LM Studio</code> 运行 <code>Gemma 4</code>，再用 <code>ADK</code> (Agent Development Kit, Python) 一步步构建带工具、MCP、Workflow、Skills 与 Memory 的 Agent。
+              <span class="en">Nine hands-on steps: run Gemma 4 locally in LM Studio, then build an ADK agent with tools, MCP, workflows, skills and memory. Use <span class="kbd">←</span> <span class="kbd">→</span> to navigate.</span>
+            </p>
+          </div>
+          <div class="badge-stack">
+            <div class="badge-big" style="border-top:5px solid var(--g-blue)"><div class="t">Model 模型</div><div class="v">Gemma 4 · <span style="font-family:'JetBrains Mono';font-size:16px">gemma-4-e4b</span></div></div>
+            <div class="badge-big" style="border-top:5px solid var(--g-red)"><div class="t">Runtime 本地运行</div><div class="v">LM Studio</div></div>
+            <div class="badge-big" style="border-top:5px solid var(--g-yellow)"><div class="t">Framework 框架</div><div class="v">Google ADK (Python)</div></div>
+            <div class="badge-big" style="border-top:5px solid var(--g-green)"><div class="t">Duration 时长</div><div class="v">约 60 分钟 · ~60 min</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 OVERVIEW -->
+      <section class="slide" data-title="Overview">
+        <span class="step-tag" data-label="Codelab · 概述 Overview"></span>
+        <h1>概述：你将构建什么？</h1>
+        <p class="h1-en">Overview — what you’ll build, what you’ll learn, what you’ll need</p>
+        <div class="grid-3">
+          <div class="card blue">
+            <h3><span class="icon blue">🏗️</span> 你将构建 · Build</h3>
+            <p>一个运行在本地 Gemma 4 上的旅行助手 Agent，逐步加入工具、Airbnb MCP 搜索、Workflow、Skills 和 Memory。<span class="en">A local travel-assistant agent on Gemma 4, extended step by step.</span></p>
+          </div>
+          <div class="card green">
+            <h3><span class="icon green">🎓</span> 你将学到 · Learn</h3>
+            <ul>
+              <li>用 LM Studio 在本地提供 Gemma 4 API</li>
+              <li>用 <code>LiteLlm</code> 把 ADK 接到本地模型</li>
+              <li>Function tools · <code>McpToolset</code> · <code>Workflow</code></li>
+              <li><code>SkillToolset</code> · Memory</li>
+            </ul>
+          </div>
+          <div class="card yellow">
+            <h3><span class="icon yellow">🧰</span> 你需要 · Need</h3>
+            <ul>
+              <li>16 GB+ RAM 的电脑 · laptop with 16 GB+ RAM</li>
+              <li>Python 3.11+ · Node.js 18+（MCP 步骤）</li>
+              <li>约 10 GB 磁盘空间 · ~10 GB disk</li>
+              <li>不需要 API key · no API key needed</li>
+            </ul>
+          </div>
+        </div>
+        <table class="tbl" style="margin-top:14px">
+          <tr><th>Step</th><th>内容 What</th><th>代码 Code</th><th>时长</th></tr>
+          <tr><td><b>1–3</b></td><td>LM Studio + Gemma 4 · Python 环境 · <code>adk create</code></td><td>—</td><td>13 min</td></tr>
+          <tr><td><b>4–5</b></td><td>第一个 Agent + datetime 工具 · ADK Web</td><td><code>step01_basic_agent</code></td><td>15 min</td></tr>
+          <tr><td><b>6</b></td><td>MCP 工具：Airbnb 搜索 · MCP tools</td><td><code>step02_mcp_agent</code></td><td>10 min</td></tr>
+          <tr><td><b>7</b></td><td>Workflow：planner → responder</td><td><code>step03_workflow_agent</code></td><td>5 min</td></tr>
+          <tr><td><b>8</b></td><td>Skills：行程规划 / 行李清单</td><td><code>step04_skills_agent</code></td><td>10 min</td></tr>
+          <tr><td><b>9</b></td><td>Memory：跨会话记忆</td><td><code>step05_memory_agent</code></td><td>5 min</td></tr>
+        </table>
+      </section>
+
+      <!-- 3 WHAT IS LOCAL LLM -->
+      <section class="slide" data-title="What is Local LLM">
+        <span class="step-tag" data-label="背景 · Local LLM"></span>
+        <h1>什么是 Local LLM？</h1>
+        <p class="h1-en">Background — what is a Local LLM?</p>
+        <blockquote class="quote">
+          “本地模型（或 Local LLM）是一种直接在<mark>你自己的设备</mark>或服务器上运行的 AI 模型，而不是通过互联网使用 AI。”
+          <span class="en">“A local model (Local LLM) is an AI model that runs directly on your own device or server, instead of using AI over the internet.”</span>
+        </blockquote>
+        <div class="vs">
+          <div class="card blue">
+            <h3><span class="icon blue">☁️</span> Cloud LLM</h3>
+            <p>提示词和数据通过网络发送到云端 API，由服务商的 GPU 推理后返回结果。<span class="en">Prompt → internet → provider API → response. Pay per request.</span></p>
+            <div class="flow"><span class="node">App</span><span class="arr">→</span><span class="node">Internet</span><span class="arr">→</span><span class="node">Cloud API</span><span class="arr">→</span><span class="node">Response</span></div>
+          </div>
+          <div class="mid">vs.</div>
+          <div class="card green">
+            <h3><span class="icon green">💻</span> Local LLM</h3>
+            <p>模型权重下载到本机，由 <code>LM Studio</code> 在本地提供 OpenAI-compatible API，数据不离开你的设备。<span class="en">Weights live on your machine; LM Studio exposes an API on <code>localhost</code>.</span></p>
+            <div class="flow"><span class="node">App / Agent</span><span class="arr">→</span><span class="node">localhost:1234</span><span class="arr">→</span><span class="node">Gemma 4</span></div>
+          </div>
+        </div>
+        <div class="grid-4" style="margin-top:14px">
+          <div class="card blue"><h3><span class="icon blue">🔒</span> 隐私</h3><p>数据留在本机。<span class="en">Data never leaves your device.</span></p></div>
+          <div class="card red"><h3><span class="icon red">📴</span> 离线</h3><p>没有网络也能推理。<span class="en">Works offline.</span></p></div>
+          <div class="card yellow"><h3><span class="icon yellow">💸</span> 零调用费</h3><p>无需按请求付费。<span class="en">No per-request cost.</span></p></div>
+          <div class="card green"><h3><span class="icon green">🛠️</span> 可控</h3><p>自由选模型与参数。<span class="en">Full control.</span></p></div>
+        </div>
+      </section>
+
+      <!-- 4 GEMMA 4 -->
+      <section class="slide" data-title="Gemma 4">
+        <span class="step-tag" data-label="背景 · Gemma 4"></span>
+        <h1>Gemma 4 快速入门</h1>
+        <p class="h1-en">Background — Gemma 4, Google’s open-weight model family</p>
+        <p class="lead">Gemma 是 Google 推出的开放权重模型家族，可下载到本地运行、微调，也可以部署到 Google Cloud。本 codelab 在 LM Studio 中使用以下模型：
+          <span class="en">Run it locally, fine-tune it, or deploy it on Google Cloud. Models for this codelab (LM Studio ids):</span></p>
+        <table class="tbl">
+          <tr><th>LM Studio model id</th><th>用途 Use</th><th>说明 Notes</th></tr>
+          <tr><td><code>google/gemma-4-e2b</code></td><td>最轻量 / lightest</td><td>内存较小的笔记本 · low-RAM laptops</td></tr>
+          <tr><td><code>google/gemma-4-e4b</code></td><td>平衡速度与质量 / balanced</td><td><b>本 codelab 默认</b> · supports tool calling · codelab default</td></tr>
+          <tr><td><code>google/gemma-4-26b</code></td><td>更强推理 / strongest local</td><td>需要更多 RAM / GPU · needs a beefy machine</td></tr>
+        </table>
+        <div class="grid-3" style="margin-top:14px">
+          <div class="card blue"><h3><span class="icon blue">🧪</span> AI Studio</h3><p>在浏览器中试用 Gemma，无需安装。<span class="en">Try Gemma in the browser.</span></p></div>
+          <div class="card red"><h3><span class="icon red">🖥️</span> LM Studio</h3><p>本地下载、对话，并提供 <code>:1234</code> API。<span class="en">Local download, chat &amp; API server.</span></p></div>
+          <div class="card green"><h3><span class="icon green">🏛️</span> Model Garden</h3><p>在 Google Cloud 上一键部署开放模型。<span class="en">Deploy open models on Google Cloud.</span></p></div>
+        </div>
+        <div class="note blue">模型 id 以 LM Studio 中 <code>lms ls</code> / <code>GET /v1/models</code> 显示为准（会随版本更新）。 · Copy the exact id your LM Studio reports.</div>
+      </section>
+
+      <!-- 5 ADK OVERVIEW -->
+      <section class="slide" data-title="ADK overview">
+        <span class="step-tag" data-label="背景 · ADK"></span>
+        <h1>智能体开发套件 (ADK)</h1>
+        <p class="h1-en">Background — Agent Development Kit: discover, build and deploy agents</p>
+        <div class="grid-2">
+          <div>
+            <p class="lead" style="margin-bottom:10px">开源、模型无关的 SDK：为真实场景定义 multi-agent 应用。通过 <code>LiteLlm</code> 可接入 LM Studio 中的本地 Gemma。
+              <span class="en">An open-source, model-agnostic SDK. <code>LiteLlm</code> connects it to local Gemma in LM Studio.</span></p>
+            <div class="tiles">
+              <div class="tile hl">Agents</div><div class="tile hl">Tools</div><div class="tile hl">Workflow</div><div class="tile">Callbacks</div>
+              <div class="tile">Streaming</div><div class="tile">Sessions</div><div class="tile">Evaluation</div><div class="tile">Deployment</div>
+              <div class="tile">Artifacts</div><div class="tile hl">Memory</div><div class="tile">Code Execution</div><div class="tile hl">Skills</div>
+            </div>
+            <div class="bars">
+              <div class="bar" style="background:var(--g-blue)">Debugging</div><div class="bar" style="background:var(--g-red)">Trace</div><div class="bar" style="background:var(--g-green)">Models</div>
+            </div>
+            <p class="lead" style="margin-top:10px">黄色 = 本 codelab 会动手实践的部分。<span class="en">Yellow = what you’ll build in this codelab.</span></p>
+          </div>
+          <div>
+            <table class="tbl">
+              <tr><th>Command</th><th>作用 What it does</th></tr>
+              <tr><td><code>adk create</code></td><td>创建新 Agent 项目 · new agent folder</td></tr>
+              <tr><td><code>adk web</code></td><td>启动带 Web UI 的开发服务 · dev UI</td></tr>
+              <tr><td><code>adk run</code></td><td>在终端中对话 · terminal chat</td></tr>
+              <tr><td><code>adk api_server</code></td><td>仅启动 API · API only</td></tr>
+              <tr><td><code>adk eval</code></td><td>评估 Agent · evaluation</td></tr>
+              <tr><td><code>adk deploy</code></td><td>部署（如 Cloud Run）· deploy</td></tr>
+            </table>
+            <div class="steps7" style="margin-top:12px">
+              <div class="s7"><span class="n" style="background:var(--g-blue)">1</span>定义目标 → 设计 → 构建 <small>Define · Design · Build</small></div>
+              <div class="s7"><span class="n" style="background:var(--g-red)">2</span>本地运行与调试 <small>adk web / adk run</small></div>
+              <div class="s7"><span class="n" style="background:var(--g-green)">3</span>评估、迭代、部署 <small>adk eval · adk deploy</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 STEP 1 -->
+      <section class="slide" data-title="Step 1 — LM Studio">
+        <span class="step-tag demo" data-label="Step 1 / 9 · LM Studio"></span>
+        <div class="step-head"><h1>1. 安装 LM Studio 并启动 Gemma 4</h1><span class="dur">⏱ 5 min</span></div>
+        <p class="h1-en">Install LM Studio, download Gemma 4 and start the local server</p>
+        <ol class="steps-list">
+          <li>从 <code>lmstudio.ai</code> 下载并安装桌面应用（macOS / Windows / Linux）。 · Install the desktop app.</li>
+          <li>在 <b>Discover</b> 中搜索 <code>gemma-4-e4b</code> 并下载，或在终端使用 <code>lms</code> CLI。 · Download Gemma 4.</li>
+          <li>在 <b>Developer</b> 标签页启动 server，或运行 <code>lms server start</code>。 · Start the local server.</li>
+        </ol>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>Terminal — download, load &amp; serve</span><button class="copy-btn">Copy</button></div>
+            <pre><code># lms CLI 随 LM Studio 一起安装 / lms ships with LM Studio
+lms get google/gemma-4-e4b      # 下载 / download
+lms load google/gemma-4-e4b     # 加载到内存 / load
+lms server start                # http://localhost:1234/v1
+
+# 验证 / verify
+curl http://localhost:1234/v1/models</code></pre>
+          </div>
+          <div class="code-box">
+            <div class="code-header"><span>Output — GET /v1/models (abridged)</span><button class="copy-btn">Copy</button></div>
+            <pre class="out-block"><code>{
+  "object": "list",
+  "data": [
+    {
+      "id": "google/gemma-4-e4b",
+      "object": "model",
+      "owned_by": "organization_owner"
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — <code>curl</code> 返回了 <code>google/gemma-4-e4b</code>。记下这个 <code>id</code>：它就是 <code>lm_studio/&lt;id&gt;</code> 中的模型名。 · Your model id shows up — it goes after <code>lm_studio/</code>.</div>
+      </section>
+
+      <!-- 7 STEP 2 -->
+      <section class="slide" data-title="Step 2 — Python">
+        <span class="step-tag demo" data-label="Step 2 / 9 · Python"></span>
+        <div class="step-head"><h1>2. 准备 Python 环境</h1><span class="dur">⏱ 5 min</span></div>
+        <p class="h1-en">Create a virtual environment and install ADK + LiteLLM</p>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>Terminal — macOS / Linux</span><button class="copy-btn">Copy</button></div>
+            <pre><code>mkdir gemma-codelab &amp;&amp; cd gemma-codelab
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+
+# ADK 2.x（Step 7 的 Workflow 需要）/ ADK 2.x for Workflow
+pip install "google-adk&gt;=2.2" "litellm&gt;=1.84"
+
+# 验证 / verify
+adk --version</code></pre>
+          </div>
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>PowerShell — Windows</span><button class="copy-btn">Copy</button></div>
+              <pre><code>mkdir gemma-codelab; cd gemma-codelab
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install "google-adk&gt;=2.2" "litellm&gt;=1.84"
+$env:PYTHONUTF8 = "1"   # 避免 LiteLLM 在 Windows 上的编码错误</code></pre>
+            </div>
+            <div class="card">
+              <h3>每个库的作用 · What each one does</h3>
+              <ul>
+                <li><code>google-adk</code>：Agent、Workflow、<code>adk</code> CLI 与 ADK Web</li>
+                <li><code>litellm</code>：<code>LiteLlm</code> 连接器，把 ADK 接到 LM Studio</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="note">⚠️ LiteLLM 1.82.7 / 1.82.8 曾遭供应链攻击，请安装最新版本。 · Avoid LiteLLM 1.82.7/1.82.8 (supply-chain advisory).</div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — <code>adk --version</code> 输出 2.x 版本号。 · <code>adk --version</code> prints a 2.x version.</div>
+      </section>
+
+      <!-- 8 STEP 3 -->
+      <section class="slide" data-title="Step 3 — adk create">
+        <span class="step-tag demo" data-label="Step 3 / 9 · adk create"></span>
+        <div class="step-head"><h1>3. 使用 ADK CLI 创建 Agent</h1><span class="dur">⏱ 3 min</span></div>
+        <p class="h1-en">Scaffold your first agent folder with the ADK CLI</p>
+        <div class="grid-2">
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>Terminal — in gemma-codelab/</span><button class="copy-btn">Copy</button></div>
+              <pre><code>adk create step01_basic_agent</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-header"><span>Interactive prompts (abridged)</span><button class="copy-btn">Copy</button></div>
+              <pre class="out-block"><code>Choose a model for the root agent:
+1. gemini-…
+2. gemini-…
+3. Other models (fill later)
+Choose model: 3        # 选 3：稍后在 agent.py 中填入 Gemma</code></pre>
+            </div>
+            <p class="lead">选择 <b>Other models</b>：我们通过 <code>LiteLlm</code> 使用本地 Gemma，不需要 <code>GOOGLE_API_KEY</code>。
+              <span class="en">Pick “Other models” — local Gemma via LiteLlm, no Gemini API key. (Prompt wording varies by ADK version.)</span></p>
+          </div>
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>Project structure by the end of the codelab</span><button class="copy-btn">Copy</button></div>
+              <pre><code>gemma-codelab/              # 在这里运行 adk web / run adk web here
+├── step01_basic_agent/     # Step 4–5
+│   ├── __init__.py         # from . import agent
+│   └── agent.py            # 定义 root_agent / defines root_agent
+├── step02_mcp_agent/       # Step 6
+├── step03_workflow_agent/  # Step 7
+├── step04_skills_agent/    # Step 8
+│   └── skills/
+└── step05_memory_agent/    # Step 9</code></pre>
+            </div>
+            <div class="note blue">💡 之后每一步：复制上一个文件夹并改名，再修改 <code>agent.py</code>。 · For each later step, copy the previous folder and edit <code>agent.py</code>.</div>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — 出现 <code>step01_basic_agent/agent.py</code> 与 <code>__init__.py</code>。 · The agent folder exists.</div>
+      </section>
+
+      <!-- 9 STEP 4 -->
+      <section class="slide" data-title="Step 4 — agent.py">
+        <span class="step-tag demo" data-label="Step 4 / 9 · First agent"></span>
+        <div class="step-head"><h1>4. 编写第一个 Agent：<code>agent.py</code></h1><span class="dur">⏱ 10 min</span></div>
+        <p class="h1-en">Point the agent at Gemma in LM Studio and give it a Python function tool</p>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>step01_basic_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+            <pre><code>import datetime
+from zoneinfo import ZoneInfo
+
+from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+
+
+def get_current_datetime(timezone: str = "Asia/Shanghai") -> dict:
+    """Return the current date and time for a timezone, e.g. Asia/Shanghai or UTC."""
+    now = datetime.datetime.now(ZoneInfo(timezone))
+    return {"timezone": timezone, "datetime": now.strftime("%Y-%m-%d %H:%M:%S")}
+
+
+model = LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
+
+root_agent = Agent(
+    model=model,
+    name="normal_gemma_agent",
+    description="A helpful assistant for user questions.",
+    instruction=(
+        "Answer user questions to the best of your knowledge. "
+        "Call get_current_datetime when asked about the date or time."
+    ),
+    tools=[get_current_datetime],
+)</code></pre>
+          </div>
+          <div>
+            <div class="card tint-blue">
+              <h3>代码解读 · Code walkthrough</h3>
+              <ul>
+                <li><code>lm_studio/</code>：LiteLLM 的 LM Studio provider 前缀，后面接模型 id · provider prefix + model id</li>
+                <li><code>api_base</code>：LM Studio 本地服务地址 · local server URL</li>
+                <li><code>get_current_datetime</code>：普通 Python 函数就是工具；docstring 和类型注解会告诉模型如何调用 · a plain function is a tool</li>
+                <li><code>root_agent</code>：ADK 通过这个名字找到入口 Agent · entry point</li>
+              </ul>
+            </div>
+            <div class="code-box" style="margin-top:12px">
+              <div class="code-header"><span>step01_basic_agent/.env（可选 / optional）</span><button class="copy-btn">Copy</button></div>
+              <pre><code># 也可以不写 api_base，改用环境变量
+# Alternative to api_base= in code
+LM_STUDIO_API_BASE=http://127.0.0.1:1234/v1</code></pre>
+            </div>
+            <div class="note">⚠️ 模型 id 必须与 <code>/v1/models</code> 返回的完全一致，否则会得到 404。 · The id must match exactly, or you’ll get a 404.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 STEP 5 -->
+      <section class="slide" data-title="Step 5 — adk web">
+        <span class="step-tag demo" data-label="Step 5 / 9 · ADK Web"></span>
+        <div class="step-head"><h1>5. 运行 ADK Web 并测试</h1><span class="dur">⏱ 5 min</span></div>
+        <p class="h1-en">Run the ADK dev UI and chat with your local Gemma agent</p>
+        <div class="grid-2">
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>Terminal — 在 gemma-codelab/ 运行 / run from the parent folder</span><button class="copy-btn">Copy</button></div>
+              <pre><code>lms server status    # 确认 LM Studio 正在运行 / is LM Studio up?
+adk web
+
+# 打开 / open: http://127.0.0.1:8000
+# 左上角选择 agent: step01_basic_agent</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-header"><span>Terminal — 不用浏览器？/ CLI instead</span><button class="copy-btn">Copy</button></div>
+              <pre><code>adk run step01_basic_agent</code></pre>
+            </div>
+            <div class="card tint-blue">
+              <h3>ADK Web 里能看到什么 · What you’ll see</h3>
+              <ul>
+                <li><b>Events</b>：每轮对话、工具调用与结果 · turns, tool calls, results</li>
+                <li><b>Traces</b>：<code>call_llm</code> 与工具执行的耗时 · span timings</li>
+                <li><b>State / Sessions</b>：会话状态 · session state</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>Sample chat</span><button class="copy-btn">Copy</button></div>
+              <pre class="out-block"><code>user  &gt; 你好！你是谁？
+agent &gt; 你好！我是 Gemma 4，由 Google DeepMind 开发的大语言模型。
+
+user  &gt; 成都现在几点？
+        ⚡ get_current_datetime(timezone="Asia/Shanghai")
+        ✔ {"timezone": "Asia/Shanghai", "datetime": "2026-11-15 14:05:12"}
+agent &gt; 成都现在是 2026-11-15 下午 2:05。</code></pre>
+            </div>
+            <div class="note blue">🐞 调试：在 <code>agent.py</code> 中加 <code>import litellm; litellm._turn_on_debug()</code>，可查看发往 LM Studio 的原始请求。 · See the raw request LiteLLM sends to LM Studio.</div>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — 问“现在几点？”时，Events 中出现 <code>get_current_datetime</code> 的工具调用。 · Asking the time triggers a tool call in Events.</div>
+      </section>
+
+      <!-- 11 STEP 6 -->
+      <section class="slide" data-title="Step 6 — MCP tools">
+        <span class="step-tag demo" data-label="Step 6 / 9 · MCP"></span>
+        <div class="step-head"><h1>6. 添加 MCP 工具：Airbnb 搜索</h1><span class="dur">⏱ 10 min</span></div>
+        <p class="h1-en">Connect an MCP server with <code style="font-size:13px">McpToolset</code> — give Gemma a real Airbnb search</p>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>step02_mcp_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+            <pre><code>from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.tools.mcp_tool import McpToolset, StdioConnectionParams
+from mcp import StdioServerParameters
+
+airbnb_tools = McpToolset(
+    connection_params=StdioConnectionParams(
+        server_params=StdioServerParameters(
+            command="npx",  # requires Node.js
+            args=["-y", "@openbnb/mcp-server-airbnb", "--ignore-robots-txt"],
+        ),
+        timeout=30,  # first npx download can be slow
+    ),
+)
+
+model = LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
+
+root_agent = Agent(
+    model=model,
+    name="travel_assistant",
+    description="A helpful travel assistant.",
+    instruction="Answer user questions. Use the Airbnb tools to find places to stay.",
+    tools=[airbnb_tools],
+)</code></pre>
+          </div>
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>Terminal</span><button class="copy-btn">Copy</button></div>
+              <pre><code>cp -r step01_basic_agent step02_mcp_agent   # 然后替换 agent.py
+node --version   # npx 需要 Node.js / npx needs Node.js
+adk web          # 选择 step02_mcp_agent</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-header"><span>Try this prompt / 试试这个提示词</span><button class="copy-btn">Copy</button></div>
+              <pre><code>帮我找成都 11 月 15 日入住两晚的民宿，2 位成人</code></pre>
+            </div>
+            <div class="card tint-green">
+              <h3>发生了什么 · What happens</h3>
+              <ul>
+                <li><code>McpToolset</code> 通过 <code>npx</code> 启动 MCP server 并发现其工具 · discovers tools</li>
+                <li>Gemma 决定调用 <code>airbnb_search</code> ⚡ · model emits a tool call</li>
+                <li>ADK 执行工具，把 JSON 结果交回模型总结 · result → summary</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — Events 中出现 <code>airbnb_search</code>，回答里列出真实房源。 · <code>airbnb_search</code> appears in Events with real listings.</div>
+      </section>
+
+      <!-- 12 STEP 7 -->
+      <section class="slide" data-title="Step 7 — Workflow">
+        <span class="step-tag demo" data-label="Step 7 / 9 · Workflow"></span>
+        <div class="step-head"><h1>7. Workflow：planner → responder</h1><span class="dur">⏱ 5 min</span></div>
+        <p class="h1-en">Chain two agents with an ADK 2.x <code style="font-size:13px">Workflow</code> — share data through <code style="font-size:13px">output_key</code></p>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>step03_workflow_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+            <pre><code>from google.adk.agents import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.workflow import START, Workflow
+
+model = LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
+
+planner = Agent(
+    model=model,
+    name="planner",
+    description="Writes a short plan for answering the user.",
+    instruction="Write a short numbered plan (3-5 steps) to answer the user. Do not answer yet.",
+    output_key="plan",
+)
+
+responder = Agent(
+    model=model,
+    name="responder",
+    description="Writes the final answer using the plan.",
+    instruction="Use this plan:\n{plan}\n\nWrite the final answer for the user.",
+)
+
+root_agent = Workflow(
+    name="workflow_gemma_agent",
+    description="Planner then responder.",
+    edges=[(START, planner, responder)],
+)</code></pre>
+          </div>
+          <div>
+            <div class="flow" style="margin:0 0 12px; font-size:13px">
+              <span class="node">START</span><span class="arr">→</span>
+              <span class="node" style="background:var(--g-blue-bg)">planner</span><span class="arr">— state["plan"] →</span>
+              <span class="node" style="background:var(--g-green-bg)">responder</span><span class="arr">→</span>
+              <span class="node" style="background:var(--g-yellow-bg)">Answer</span>
+            </div>
+            <div class="card tint-blue">
+              <h3>要点 Key points</h3>
+              <ul>
+                <li><code>output_key="plan"</code>：planner 的输出写入 session state · saves output to state</li>
+                <li><code>{plan}</code>：responder 的 instruction 自动读取 state · injected into the prompt</li>
+                <li><code>edges=[(START, planner, responder)]</code>：按顺序执行的图 · a sequential graph</li>
+              </ul>
+            </div>
+            <div class="code-box" style="margin-top:12px">
+              <div class="code-header"><span>Try this prompt / 试试这个提示词</span><button class="copy-btn">Copy</button></div>
+              <pre><code>帮我安排一个成都周末两日游</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — Events 中先看到 <code>planner</code> 的计划，再看到 <code>responder</code> 的最终回答；State 中有 <code>plan</code>。 · Two agents run in order; <code>plan</code> shows in State.</div>
+      </section>
+
+      <!-- 13 STEP 8 -->
+      <section class="slide" data-title="Step 8 — Skills">
+        <span class="step-tag demo" data-label="Step 8 / 9 · Skills"></span>
+        <div class="step-head"><h1>8. Skills：按需加载的能力包</h1><span class="dur">⏱ 10 min</span></div>
+        <p class="h1-en">Give the agent reusable skills with <code style="font-size:13px">SkillToolset</code> — loaded progressively to save context</p>
+        <div class="grid-2">
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>step04_skills_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+              <pre><code>from pathlib import Path
+
+from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.skills import load_skills_from_dir
+from google.adk.tools.skill_toolset import SkillToolset
+
+skills = load_skills_from_dir(Path(__file__).parent / "skills")
+
+model = LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
+
+root_agent = Agent(
+    model=model,
+    name="skills_agent",
+    description="A travel helper that uses skills.",
+    instruction="Answer user questions. Load a skill when it matches the request.",
+    tools=[SkillToolset(skills=skills)],
+)</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-header"><span>step04_skills_agent/skills/</span><button class="copy-btn">Copy</button></div>
+              <pre><code>skills/
+├── trip-itinerary/SKILL.md   # 文件夹名 = frontmatter name
+└── packing-list/SKILL.md</code></pre>
+            </div>
+          </div>
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>skills/trip-itinerary/SKILL.md</span><button class="copy-btn">Copy</button></div>
+              <pre class="out-block"><code>---
+name: trip-itinerary
+description: Plan a day-by-day trip itinerary. Use when the user
+  asks to plan a trip or what to do in a city for some days.
+---
+
+# Trip itinerary
+
+1. Ask for the city and number of days if the user did not say.
+2. Write one section per day: Day 1, Day 2, ...
+3. Each day has 3 parts: morning, afternoon, evening.
+4. End each day with one local food to try.
+5. Keep it short. Answer in the user's language.</code></pre>
+            </div>
+            <div class="skill-flow" style="grid-template-columns:repeat(3,1fr)">
+              <div class="sf"><div class="k">① L1 发现</div><div class="t"><code>list_skills</code></div><p>只看 name + description</p></div>
+              <div class="sf"><div class="k">② L2 加载</div><div class="t"><code>load_skill</code></div><p>读取 SKILL.md 正文</p></div>
+              <div class="sf"><div class="k">③ L3 资源</div><div class="t" style="font-size:12px"><code>load_skill_resource</code></div><p>references/ · assets/</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — 输入“帮我规划成都 3 天行程”，Events 中出现 <code>load_skill</code>(trip-itinerary)，回答按 Day 1–3 分段。 · <code>load_skill</code> fires and the answer follows the skill’s format.</div>
+      </section>
+
+      <!-- 14 STEP 9 -->
+      <section class="slide" data-title="Step 9 — Memory">
+        <span class="step-tag demo" data-label="Step 9 / 9 · Memory"></span>
+        <div class="step-head"><h1>9. Memory：跨会话记住用户</h1><span class="dur">⏱ 5 min</span></div>
+        <p class="h1-en">Save each conversation to memory with a callback, recall it later with <code style="font-size:13px">load_memory</code></p>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>step05_memory_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+            <pre><code>from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.tools.load_memory_tool import load_memory_tool
+
+
+async def save_to_memory(callback_context):
+    """After each turn, save this conversation so other sessions can recall it."""
+    await callback_context.add_session_to_memory()
+
+
+model = LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
+
+root_agent = Agent(
+    model=model,
+    name="memory_agent",
+    description="An assistant that remembers past conversations.",
+    instruction=(
+        "Answer user questions. "
+        "If the user asks about something from a past conversation, "
+        "call load_memory with a short keyword query first."
+    ),
+    tools=[load_memory_tool],
+    after_agent_callback=save_to_memory,
+)</code></pre>
+          </div>
+          <div>
+            <div class="card tint-blue">
+              <h3>要点 Key points</h3>
+              <ul>
+                <li><code>after_agent_callback</code>：每轮结束后把会话存入 Memory · save after each turn</li>
+                <li><code>load_memory_tool</code>：模型需要时按关键词检索记忆 · search memory on demand</li>
+                <li>Session = 一次对话；Memory = 跨对话的长期记忆 · session vs. memory</li>
+              </ul>
+            </div>
+            <div class="code-box" style="margin-top:12px">
+              <div class="code-header"><span>Try it — 两个会话 / two sessions</span><button class="copy-btn">Copy</button></div>
+              <pre class="out-block"><code># Session 1
+user  &gt; 我叫 Beat，我最喜欢的川菜是麻婆豆腐。
+
+# ADK Web 右上角 “New Session” 新建会话
+# Session 2
+user  &gt; 我最喜欢的川菜是什么？
+        ⚡ load_memory(query="最喜欢的川菜")
+agent &gt; 你最喜欢的是麻婆豆腐！</code></pre>
+            </div>
+            <div class="note">ℹ️ <code>adk web</code> 默认使用内存型 Memory，重启服务后会清空。 · The default memory service is in-memory — it resets when you restart.</div>
+          </div>
+        </div>
+        <div class="checkpoint"><b>✅ 检查点 Checkpoint</b> — 在新会话中，Agent 通过 <code>load_memory</code> 想起了上一个会话的内容。 · A new session recalls facts from the previous one.</div>
+      </section>
+
+      <!-- 15 ARCHITECTURE -->
+      <section class="slide" data-title="Architecture">
+        <span class="step-tag" data-label="回顾 · 架构 Mental model"></span>
+        <h1>回顾：一次请求如何流动</h1>
+        <p class="h1-en">Recap — how one user message flows through ADK, LiteLLM, LM Studio and your tools</p>
+        <div class="arch">
+          <div class="box" style="border-top:4px solid var(--g-blue)"><b>你 / User</b><span>ADK Web (:8000)<br />或 <code>adk run</code></span></div>
+          <div class="box" style="border-top:4px solid var(--g-red)"><b>Runner + Session</b><span>会话、事件、状态、Memory<br />events · state · memory</span></div>
+          <div class="box" style="border-top:4px solid var(--g-yellow)"><b>Agent / Workflow</b><span>instruction + tools<br /><code>root_agent</code></span></div>
+          <div class="box" style="border-top:4px solid var(--g-green)"><b>LiteLlm</b><span><code>lm_studio/…</code><br />+ <code>api_base</code></span></div>
+          <div class="box" style="border-top:4px solid var(--g-blue)"><b>Gemma 4</b><span>LM Studio<br /><code>localhost:1234</code></span></div>
+        </div>
+        <div class="grid-3" style="margin-top:16px">
+          <div class="card yellow"><h3>🧰 Tools</h3><p>Python 函数 (Step 4)、<code>McpToolset</code> (Step 6)、<code>SkillToolset</code> (Step 8)、<code>load_memory</code> (Step 9)。<span class="en">Model emits a function call → ADK executes → result goes back to the model.</span></p></div>
+          <div class="card blue"><h3>🔁 Loop</h3><p>Agent 循环：思考 → 调用工具 → 观察结果 → 直到给出最终回答；Workflow 把多个 Agent 串成图 (Step 7)。<span class="en">Reason → act → observe; workflows chain agents.</span></p></div>
+          <div class="card green"><h3>🔄 Swap models</h3><p>只改 <code>LiteLlm(model=…)</code> 一行即可换成更大的 Gemma 或云端模型。<span class="en">Change one line to switch models.</span></p></div>
+        </div>
+      </section>
+
+      <!-- 16 CHEAT SHEET -->
+      <section class="slide" data-title="Cheat sheet">
+        <span class="step-tag" data-label="速查表 Cheat sheet"></span>
+        <h1>命令速查表</h1>
+        <p class="h1-en">All codelab commands in one place</p>
+        <div class="grid-2">
+          <div class="code-box">
+            <div class="code-header"><span>Terminal — Step 1 → 9</span><button class="copy-btn">Copy</button></div>
+            <pre><code># Step 1. LM Studio + Gemma 4 (install the app from lmstudio.ai)
+lms get google/gemma-4-e4b
+lms load google/gemma-4-e4b
+lms server start                # http://localhost:1234/v1
+
+# Step 2. Python environment
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install "google-adk&gt;=2.2" "litellm&gt;=1.84"
+
+# Step 3. Create agent
+adk create step01_basic_agent   # choose "Other models"
+
+# Step 4–5. Edit agent.py, then run
+adk web                         # http://127.0.0.1:8000
+adk run step01_basic_agent      # terminal chat
+
+# Step 6–9. Copy folder → edit agent.py → adk web
+cp -r step01_basic_agent step02_mcp_agent</code></pre>
+          </div>
+          <div>
+            <div class="code-box">
+              <div class="code-header"><span>LiteLlm → LM Studio</span><button class="copy-btn">Copy</button></div>
+              <pre><code># LM Studio provider (this codelab)
+LiteLlm(model="lm_studio/google/gemma-4-e4b",
+        api_base="http://127.0.0.1:1234/v1")
+
+# Same server via the generic OpenAI-compatible route
+LiteLlm(model="openai/google/gemma-4-e4b",
+        api_base="http://127.0.0.1:1234/v1",
+        api_key="lm-studio")</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-header"><span>Next steps</span><button class="copy-btn">Copy</button></div>
+              <pre><code>adk eval step01_basic_agent path/to/evalset.json   # 评估 / evaluate
+adk api_server                                     # API only, no UI
+adk deploy cloud_run --help                        # 部署 / deploy</code></pre>
+            </div>
+            <div class="card tint-yellow">
+              <h3>常见问题 · Troubleshooting</h3>
+              <ul>
+                <li><b>404 / model not found</b>：模型 id 与 <code>/v1/models</code> 不一致</li>
+                <li><b>Connection refused</b>：LM Studio server 未启动 → <code>lms server start</code></li>
+                <li><b>不调用工具</b>：换支持 tool use 的模型，或在 instruction 中明确写出何时调用</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 17 CONGRATS + REFERENCES -->
+      <section class="slide" data-title="Congratulations">
+        <span class="step-tag" data-label="完成 Congratulations"></span>
+        <h1>🎉 恭喜完成！</h1>
+        <p class="h1-en">Congratulations — you built a local Gemma 4 agent with ADK, MCP, Workflow, Skills and Memory</p>
+        <div class="grid-2">
+          <div>
+            <div class="card tint-green" style="margin-bottom:12px">
+              <h3>你已经完成 · What you did</h3>
+              <ul>
+                <li>✅ 用 LM Studio 在本地运行 Gemma 4</li>
+                <li>✅ 用 ADK + LiteLlm 构建带工具的 Agent</li>
+                <li>✅ 接入 Airbnb MCP server</li>
+                <li>✅ 用 Workflow 串联 planner → responder</li>
+                <li>✅ 用 Skills 与 Memory 扩展 Agent</li>
+              </ul>
+            </div>
+            <ul class="ref-list">
+              <li><span class="icon blue">📘</span><div><a href="https://adk.dev/" target="_blank" rel="noopener">adk.dev</a><small>ADK 官方文档 · Agent Development Kit docs</small></div></li>
+              <li><span class="icon green">🖥️</span><div><a href="https://lmstudio.ai/docs" target="_blank" rel="noopener">lmstudio.ai/docs</a><small>LM Studio 文档 · local server &amp; <code>lms</code> CLI</small></div></li>
+            </ul>
+          </div>
+          <ul class="ref-list">
+            <li><span class="icon yellow">🔌</span><div><a href="https://adk.dev/tools-custom/mcp-tools/" target="_blank" rel="noopener">adk.dev/tools-custom/mcp-tools</a><small>ADK MCP tools · <code>McpToolset</code></small></div></li>
+            <li><span class="icon yellow">🧩</span><div><a href="https://adk.dev/skills/" target="_blank" rel="noopener">adk.dev/skills</a><small>Skills · <code>SkillToolset</code> (Experimental)</small></div></li>
+            <li><span class="icon red">📦</span><div><a href="https://docs.litellm.ai/docs/providers/lm_studio" target="_blank" rel="noopener">docs.litellm.ai/docs/providers/lm_studio</a><small>LiteLLM <code>lm_studio/</code> provider</small></div></li>
+            <li><span class="icon blue">💎</span><div><a href="https://ai.google.dev/gemma" target="_blank" rel="noopener">ai.google.dev/gemma</a><small>Gemma 模型家族 · Gemma models</small></div></li>
+            <li><span class="icon green">🐍</span><div><a href="https://github.com/google/adk-python" target="_blank" rel="noopener">github.com/google/adk-python</a><small>ADK Python 源码与示例 · source &amp; samples</small></div></li>
+          </ul>
+        </div>
+        <div class="note blue" style="margin-top:14px">谢谢！Thank you — 欢迎在 DevFest 成都 继续交流。 · Punsiri Boonyakiat (Beat), Lead Data Engineer @ Central Food Retail</div>
+      </section>
+    </main>
+
+    <footer class="slide-footer">
+      <div><strong>DevFest Chengdu</strong> • Punsiri Boonyakiat • 构建开源 AI 智能体 · Gemma + ADK</div>
+      <div class="gdg-pills">
+        <span class="gdg-pill blue">Google ADK</span>
+        <span class="gdg-pill red">Gemma 4</span>
+        <span class="gdg-pill yellow">Python</span>
+        <span class="gdg-pill green">LM Studio</span><span class="gdg-pill blue">MCP · Skills · Memory</span>
+      </div>
+    </footer>
+
+    <script>
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const total = slides.length;
+      const pad = (n) => String(n).padStart(2, '0');
+      slides.forEach((s, i) => {
+        const tag = s.querySelector('.step-tag');
+        if (tag) tag.textContent = `Slide ${pad(i + 1)} / ${pad(total)} • ${tag.dataset.label || ''}`;
+      });
+
+      // Light syntax touch: colour "# comments" in code blocks (copy still uses plain text)
+      document.querySelectorAll('pre:not(.out-block) code').forEach((code) => {
+        const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        code.innerHTML = code.textContent.split('\n').map((line) => {
+          const m = line.match(/^(.*?)(^|\s)(#(?!!).*)$/);
+          if (!m || /["'][^"']*#/.test(m[1] + m[2])) return esc(line);
+          return esc(m[1] + m[2]) + '<span class="cm">' + esc(m[3]) + '</span>';
+        }).join('\n');
+      });
+
+      const params = new URLSearchParams(location.search);
+      const want = parseInt(params.get('slide') || location.hash.replace('#', ''), 10);
+      let currentSlide = !isNaN(want) && want >= 1 && want <= total ? want - 1 : 0;
+      let showAll = false;
+      const counterEl = document.getElementById('slideCounter');
+      const progressEl = document.getElementById('progressBar');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const modeBtn = document.getElementById('modeBtn');
+
+      function renderSlide() {
+        if (showAll) return;
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        counterEl.textContent = `${currentSlide + 1} / ${total}`;
+        progressEl.style.width = `${((currentSlide + 1) / total) * 100}%`;
+        prevBtn.disabled = currentSlide === 0;
+        nextBtn.disabled = currentSlide === total - 1;
+        history.replaceState(null, '', '#' + (currentSlide + 1));
+        window.scrollTo({ top: 0 });
+      }
+      function changeSlide(delta) {
+        if (showAll) toggleAllMode();
+        const next = currentSlide + delta;
+        if (next >= 0 && next < total) { currentSlide = next; renderSlide(); }
+      }
+      function toggleAllMode() {
+        showAll = !showAll;
+        document.body.classList.toggle('slide-All', showAll);
+        modeBtn.textContent = showAll ? '单页模式 Single Slide' : '全部滚动 Scroll All';
+        counterEl.textContent = showAll ? `All ${total}` : `${currentSlide + 1} / ${total}`;
+        if (!showAll) renderSlide();
+      }
+
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta); return ok;
+      }
+      function copyCode(btn) {
+        const text = btn.closest('.code-box').querySelector('pre').innerText;
+        const done = (ok) => {
+          btn.textContent = ok ? 'Copied! 已复制' : 'Copy failed';
+          btn.classList.toggle('ok', ok);
+          setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1300);
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(() => done(true), () => done(fallbackCopy(text)));
+        } else { done(fallbackCopy(text)); }
+      }
+      document.querySelectorAll('.copy-btn').forEach((b) => b.addEventListener('click', () => copyCode(b)));
+
+      window.addEventListener('keydown', (e) => {
+        if (e.target.closest && e.target.closest('input,textarea')) return;
+        if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && !showAll)) { e.preventDefault(); changeSlide(1); }
+        if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); changeSlide(-1); }
+        if (e.key === 'Home') { currentSlide = 0; renderSlide(); }
+        if (e.key === 'End') { currentSlide = total - 1; renderSlide(); }
+      });
+      renderSlide();
+    </script>
+  </body>
+</html>
