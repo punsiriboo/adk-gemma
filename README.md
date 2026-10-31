@@ -10,8 +10,8 @@ Slides: open [`index.html`](index.html) in a browser (DevFest Chengdu, EN + 简�
 |--------|---------------|
 | `step01_basic_agent/` | `Agent` + LiteLlm → LM Studio, with a `get_current_datetime` function tool |
 | `step02_mcp_agent/` | `McpToolset` connected to the Airbnb MCP server (`npx`) |
-| `step03_workflow_agent/` | ADK 2.x `Workflow`: planner → responder via `output_key` |
-| `step04_skills_agent/` | `SkillToolset` loading `skills/trip-itinerary` and `skills/packing-list` |
+| `step03_skills_agent/` | `SkillToolset` loading `skills/trip-itinerary` and `skills/packing-list` |
+| `step04_workflow_agent/` | ADK 2.x `Workflow`: planner → responder via `output_key` |
 
 Every agent uses the same model:
 
@@ -56,12 +56,12 @@ adk run step01_basic_agent
 
 ## Try these prompts
 
-| Agent | Prompt |
-|-------|--------|
-| `step01_basic_agent` | 成都现在几点？ |
-| `step02_mcp_agent` | 帮我找成都 11 月 15 日入住两晚的民宿，2 位成人 |
-| `step03_workflow_agent` | 帮我安排一个成都周末两日游 |
-| `step04_skills_agent` | 帮我规划成都 3 天行程 |
+| Agent | 中文 | English |
+|-------|------|---------|
+| `step01_basic_agent` | 成都现在几点？ | What time is it in Chengdu now? |
+| `step02_mcp_agent` | 帮我找成都 11 月 15 日入住两晚的民宿，2 位成人 | Find me a place to stay in Chengdu for 2 nights from Nov 15, 2 adults |
+| `step03_skills_agent` | 帮我规划成都 3 天行程 | Plan a 3-day trip to Chengdu |
+| `step04_workflow_agent` | 帮我安排一个成都周末两日游 | Plan a 2-day weekend trip in Chengdu for me |
 
 ## Troubleshooting
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gemma &amp; ADK Codelab</title>
-    <meta name="description" content="DevFest Chengdu codelab (EN + 简体中文): build ADK agents on Gemma 4 running locally in LM Studio — tools, MCP, Workflow and Skills." />
+    <meta name="description" content="DevFest Chengdu codelab (EN + 简体中文): build ADK agents on Gemma 4 running locally in LM Studio — tools, MCP, Skills and Workflow." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -150,8 +150,8 @@
             <p>在这个 codelab 中，你将在自己的电脑上用 <b>LM Studio</b> 运行 <b>Gemma 4</b>，再用 <b>ADK</b>（Agent Development Kit, Python）一步步构建一个本地旅行助手 Agent，不需要任何 API key。
               <span class="en">You’ll run Gemma 4 locally in LM Studio and build a travel-assistant agent with ADK, step by step — no API key needed.</span></p>
             <div class="cover">
-              <div><b>🏗️ 你将构建 · Build</b><ul><li>带 Python 工具的 Agent</li><li>Airbnb MCP 搜索</li><li>planner → responder Workflow</li><li>带 Skills 的 Agent</li></ul></div>
-              <div><b>🎓 你将学到 · Learn</b><ul><li>LM Studio 本地 API</li><li><code>LiteLlm</code> 接入本地模型</li><li><code>McpToolset</code> · <code>Workflow</code></li><li><code>SkillToolset</code></li></ul></div>
+              <div><b>🏗️ 你将构建 · Build</b><ul><li>带 Python 工具的 Agent</li><li>Airbnb MCP 搜索</li><li>带 Skills 的 Agent</li><li>planner → responder Workflow</li></ul></div>
+              <div><b>🎓 你将学到 · Learn</b><ul><li>LM Studio 本地 API</li><li><code>LiteLlm</code> 接入本地模型</li><li><code>McpToolset</code> · <code>SkillToolset</code></li><li><code>Workflow</code></li></ul></div>
               <div><b>🧰 你需要 · Need</b><ul><li>16 GB+ RAM 的电脑</li><li>Python 3.11+</li><li>Node.js 18+（MCP 步骤）</li><li>约 10 GB 磁盘空间</li></ul></div>
             </div>
             <p>最终的项目结构 · Final project layout:</p>
@@ -160,9 +160,9 @@
               <pre><code>gemma-codelab/              # 在这里运行 adk web / run adk web here
 ├── step01_basic_agent/     # 第一个 Agent + 工具
 ├── step02_mcp_agent/       # MCP 工具
-├── step03_workflow_agent/  # Workflow
-└── step04_skills_agent/    # Skills
-    └── skills/</code></pre>
+├── step03_skills_agent/    # Skills
+│   └── skills/
+└── step04_workflow_agent/  # Workflow</code></pre>
             </div>
             <p>讲者 Speaker：Punsiri Boonyakiat (Beat) · DevFest 成都</p>
           </section>
@@ -206,8 +206,8 @@
               <tr><td><code>Agent</code></td><td>指令 + 模型 + 工具 · instruction, model, tools</td><td>7</td></tr>
               <tr><td>Function tool</td><td>普通 Python 函数即工具 · a plain function is a tool</td><td>7</td></tr>
               <tr><td><code>McpToolset</code></td><td>接入任意 MCP server 的工具 · tools from MCP servers</td><td>9</td></tr>
-              <tr><td><code>Workflow</code></td><td>把多个 Agent 串成图 · chain agents as a graph</td><td>10</td></tr>
-              <tr><td><code>SkillToolset</code></td><td>按需加载的能力包 · on-demand skill packs</td><td>11</td></tr>
+              <tr><td><code>SkillToolset</code></td><td>按需加载的能力包 · on-demand skill packs</td><td>10</td></tr>
+              <tr><td><code>Workflow</code></td><td>把多个 Agent 串成图 · chain agents as a graph</td><td>11</td></tr>
             </table>
             <p>常用命令 · Commands:</p>
             <table>
@@ -373,6 +373,15 @@ adk web              # http://127.0.0.1:8000</code></pre>
             <p>打开 <code>http://127.0.0.1:8000</code>，在左上角选择 <code>step01_basic_agent</code>，然后试试：
               <span class="en">Open the URL, pick <code>step01_basic_agent</code> in the top-left, and try:</span></p>
             <div class="code-box">
+              <div class="code-head"><span>Prompt · 中文</span><button class="copy-btn">Copy</button></div>
+              <pre><code>成都现在几点？</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-head"><span>Prompt · English</span><button class="copy-btn">Copy</button></div>
+              <pre><code>What time is it in Chengdu now?</code></pre>
+            </div>
+            <p>示例对话 · Sample chat:</p>
+            <div class="code-box">
               <div class="code-head"><span>Sample chat</span><button class="copy-btn">Copy</button></div>
               <pre class="out-block"><code>user  &gt; 你好！你是谁？
 agent &gt; 你好！我是 Gemma 4，由 Google DeepMind 开发的大语言模型。
@@ -394,7 +403,7 @@ agent &gt; 成都现在是 2026-11-15 下午 2:05。</code></pre>
               <pre><code>adk run step01_basic_agent</code></pre>
             </div>
             <div class="callout info"><b class="t">🐞 调试 Debug</b><p>在 <code>agent.py</code> 中加入 <code>import litellm; litellm._turn_on_debug()</code>，可以查看发往 LM Studio 的原始请求。 <span class="en">Shows the raw request sent to LM Studio.</span></p></div>
-            <div class="callout check"><b class="t">✅ 检查点 Checkpoint</b><p>问“现在几点？”时，Events 中出现 <code>get_current_datetime</code> 的工具调用。 <span class="en">Asking the time triggers a tool call.</span></p></div>
+            <div class="callout check"><b class="t">✅ 检查点 Checkpoint</b><p>问“现在几点？”时，Events 中出现 <code>get_current_datetime</code> 的工具调用。 <span class="en">Asking “What time is it?” triggers a tool call.</span></p></div>
           </section>
 
           <!-- 9 -->
@@ -440,8 +449,12 @@ root_agent = Agent(
             <p>重新运行 <code>adk web</code>，选择 <code>step02_mcp_agent</code>，试试这个提示词：
               <span class="en">Run <code>adk web</code> again, pick <code>step02_mcp_agent</code> and try:</span></p>
             <div class="code-box">
-              <div class="code-head"><span>Prompt</span><button class="copy-btn">Copy</button></div>
+              <div class="code-head"><span>Prompt · 中文</span><button class="copy-btn">Copy</button></div>
               <pre><code>帮我找成都 11 月 15 日入住两晚的民宿，2 位成人</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-head"><span>Prompt · English</span><button class="copy-btn">Copy</button></div>
+              <pre><code>Find me a place to stay in Chengdu for 2 nights from Nov 15, 2 adults</code></pre>
             </div>
             <h3>发生了什么 · What happens</h3>
             <ol>
@@ -453,12 +466,84 @@ root_agent = Agent(
           </section>
 
           <!-- 10 -->
+          <section class="step" data-title="Skills：按需加载的能力包">
+            <h2>Skills：按需加载的能力包</h2>
+            <p class="sub">Give the agent reusable skills with <code>SkillToolset</code> — loaded progressively to save context</p>
+            <p>Skill 是一个文件夹，里面的 <code>SKILL.md</code> 描述何时使用以及如何完成任务。Agent 先只看名称和描述，需要时才加载正文：
+              <span class="en">A skill is a folder with a <code>SKILL.md</code>. The agent sees only name + description until it needs the full text:</span></p>
+            <ol>
+              <li><b>L1</b> <code>list_skills</code>：只看 name + description <span class="en">discover</span></li>
+              <li><b>L2</b> <code>load_skill</code>：读取 SKILL.md 正文 <span class="en">load instructions</span></li>
+              <li><b>L3</b> <code>load_skill_resource</code>：读取 references/ · assets/ <span class="en">load resources</span></li>
+            </ol>
+            <div class="code-box">
+              <div class="code-head"><span>step03_skills_agent/</span><button class="copy-btn">Copy</button></div>
+              <pre><code>step03_skills_agent/
+├── __init__.py
+├── agent.py
+└── skills/
+    ├── trip-itinerary/SKILL.md   # 文件夹名 = frontmatter name
+    └── packing-list/SKILL.md</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-head"><span>skills/trip-itinerary/SKILL.md</span><button class="copy-btn">Copy</button></div>
+              <pre class="out-block"><code>---
+name: trip-itinerary
+description: Plan a day-by-day trip itinerary. Use when the user asks to plan a trip or what to do in a city for some days.
+---
+
+# Trip itinerary
+
+1. Ask for the city and number of days if the user did not say.
+2. Write one section per day: Day 1, Day 2, ...
+3. Each day has 3 parts: morning, afternoon, evening.
+4. End each day with one local food to try.
+5. Keep it short. Answer in the user's language.</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-head"><span>step03_skills_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+              <pre><code>from pathlib import Path
+
+from google.adk.agents.llm_agent import Agent
+from google.adk.models.lite_llm import LiteLlm
+from google.adk.skills import load_skills_from_dir
+from google.adk.tools.skill_toolset import SkillToolset
+
+skills = load_skills_from_dir(Path(__file__).parent / "skills")
+
+model = LiteLlm(
+    model="lm_studio/google/gemma-4-e4b",
+    api_base="http://127.0.0.1:1234/v1",
+)
+
+root_agent = Agent(
+    model=model,
+    name="skills_agent",
+    description="A travel helper that uses skills.",
+    instruction="Answer user questions. Load a skill when it matches the request.",
+    tools=[SkillToolset(skills=skills)],
+)</code></pre>
+            </div>
+            <p>运行 <code>adk web</code>，选择 <code>step03_skills_agent</code>，试试：<span class="en">Pick <code>step03_skills_agent</code> and try:</span></p>
+            <div class="code-box">
+              <div class="code-head"><span>Prompt · 中文</span><button class="copy-btn">Copy</button></div>
+              <pre><code>帮我规划成都 3 天行程</code></pre>
+            </div>
+            <div class="code-box">
+              <div class="code-head"><span>Prompt · English</span><button class="copy-btn">Copy</button></div>
+              <pre><code>Plan a 3-day trip to Chengdu</code></pre>
+            </div>
+            <div class="callout warn"><b class="t">⚠️ Experimental</b><p>Skills 在 ADK 文档中标记为 Experimental，API 可能变化。 <span class="en">Skills are experimental in ADK — APIs may change.</span></p></div>
+            <div class="callout check"><b class="t">✅ 检查点 Checkpoint</b><p>输入“帮我规划成都 3 天行程”，Events 中出现 <code>load_skill</code>(trip-itinerary)，回答按 Day 1–3 分段。 <span class="en">For “Plan a 3-day trip to Chengdu”, <code>load_skill</code> fires and the answer follows the skill’s Day 1–3 format.</span></p></div>
+          </section>
+
+          <!-- 11 -->
           <section class="step" data-title="Workflow：planner → responder">
             <h2>Workflow：planner → responder</h2>
             <p class="sub">Chain two agents with an ADK 2.x <code>Workflow</code> and share data through <code>output_key</code></p>
             <div class="flow"><span>START</span><i>→</i><span>planner</span><i>— state["plan"] →</i><span>responder</span><i>→</i><span>Answer</span></div>
             <div class="code-box">
-              <div class="code-head"><span>step03_workflow_agent/agent.py</span><button class="copy-btn">Copy</button></div>
+              <div class="code-head"><span>step04_workflow_agent/agent.py</span><button class="copy-btn">Copy</button></div>
               <pre><code>from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.workflow import START, Workflow
@@ -494,87 +579,28 @@ root_agent = Workflow(
               <li><code>{plan}</code>：responder 的 instruction 自动读取 state <span class="en">injected into the prompt</span></li>
               <li><code>edges=[(START, planner, responder)]</code>：按顺序执行的图 <span class="en">a sequential graph</span></li>
             </ul>
-            <p>运行 <code>adk web</code>，选择 <code>step03_workflow_agent</code>，试试：<span class="en">Pick <code>step03_workflow_agent</code> and try:</span></p>
+            <p>运行 <code>adk web</code>，选择 <code>step04_workflow_agent</code>，试试：<span class="en">Pick <code>step04_workflow_agent</code> and try:</span></p>
             <div class="code-box">
-              <div class="code-head"><span>Prompt</span><button class="copy-btn">Copy</button></div>
+              <div class="code-head"><span>Prompt · 中文</span><button class="copy-btn">Copy</button></div>
               <pre><code>帮我安排一个成都周末两日游</code></pre>
             </div>
+            <div class="code-box">
+              <div class="code-head"><span>Prompt · English</span><button class="copy-btn">Copy</button></div>
+              <pre><code>Plan a 2-day weekend trip in Chengdu for me</code></pre>
+            </div>
             <div class="callout check"><b class="t">✅ 检查点 Checkpoint</b><p>Events 中先看到 <code>planner</code> 的计划，再看到 <code>responder</code> 的最终回答；State 中有 <code>plan</code>。 <span class="en">Two agents run in order; <code>plan</code> shows in State.</span></p></div>
-          </section>
-
-          <!-- 11 -->
-          <section class="step" data-title="Skills：按需加载的能力包">
-            <h2>Skills：按需加载的能力包</h2>
-            <p class="sub">Give the agent reusable skills with <code>SkillToolset</code> — loaded progressively to save context</p>
-            <p>Skill 是一个文件夹，里面的 <code>SKILL.md</code> 描述何时使用以及如何完成任务。Agent 先只看名称和描述，需要时才加载正文：
-              <span class="en">A skill is a folder with a <code>SKILL.md</code>. The agent sees only name + description until it needs the full text:</span></p>
-            <ol>
-              <li><b>L1</b> <code>list_skills</code>：只看 name + description <span class="en">discover</span></li>
-              <li><b>L2</b> <code>load_skill</code>：读取 SKILL.md 正文 <span class="en">load instructions</span></li>
-              <li><b>L3</b> <code>load_skill_resource</code>：读取 references/ · assets/ <span class="en">load resources</span></li>
-            </ol>
-            <div class="code-box">
-              <div class="code-head"><span>step04_skills_agent/</span><button class="copy-btn">Copy</button></div>
-              <pre><code>step04_skills_agent/
-├── __init__.py
-├── agent.py
-└── skills/
-    ├── trip-itinerary/SKILL.md   # 文件夹名 = frontmatter name
-    └── packing-list/SKILL.md</code></pre>
-            </div>
-            <div class="code-box">
-              <div class="code-head"><span>skills/trip-itinerary/SKILL.md</span><button class="copy-btn">Copy</button></div>
-              <pre class="out-block"><code>---
-name: trip-itinerary
-description: Plan a day-by-day trip itinerary. Use when the user asks to plan a trip or what to do in a city for some days.
----
-
-# Trip itinerary
-
-1. Ask for the city and number of days if the user did not say.
-2. Write one section per day: Day 1, Day 2, ...
-3. Each day has 3 parts: morning, afternoon, evening.
-4. End each day with one local food to try.
-5. Keep it short. Answer in the user's language.</code></pre>
-            </div>
-            <div class="code-box">
-              <div class="code-head"><span>step04_skills_agent/agent.py</span><button class="copy-btn">Copy</button></div>
-              <pre><code>from pathlib import Path
-
-from google.adk.agents.llm_agent import Agent
-from google.adk.models.lite_llm import LiteLlm
-from google.adk.skills import load_skills_from_dir
-from google.adk.tools.skill_toolset import SkillToolset
-
-skills = load_skills_from_dir(Path(__file__).parent / "skills")
-
-model = LiteLlm(
-    model="lm_studio/google/gemma-4-e4b",
-    api_base="http://127.0.0.1:1234/v1",
-)
-
-root_agent = Agent(
-    model=model,
-    name="skills_agent",
-    description="A travel helper that uses skills.",
-    instruction="Answer user questions. Load a skill when it matches the request.",
-    tools=[SkillToolset(skills=skills)],
-)</code></pre>
-            </div>
-            <div class="callout warn"><b class="t">⚠️ Experimental</b><p>Skills 在 ADK 文档中标记为 Experimental，API 可能变化。 <span class="en">Skills are experimental in ADK — APIs may change.</span></p></div>
-            <div class="callout check"><b class="t">✅ 检查点 Checkpoint</b><p>输入“帮我规划成都 3 天行程”，Events 中出现 <code>load_skill</code>(trip-itinerary)，回答按 Day 1–3 分段。 <span class="en"><code>load_skill</code> fires and the answer follows the skill’s format.</span></p></div>
           </section>
 
           <!-- 12 -->
           <section class="step" data-title="恭喜完成！">
             <h2>🎉 恭喜完成！</h2>
-            <p class="sub">Congratulations — you built a local Gemma 4 agent with ADK, MCP, Workflow and Skills</p>
+            <p class="sub">Congratulations — you built a local Gemma 4 agent with ADK, MCP, Skills and Workflow</p>
             <ul>
               <li>✅ 用 LM Studio 在本地运行 Gemma 4</li>
               <li>✅ 用 ADK + <code>LiteLlm</code> 构建带工具的 Agent</li>
               <li>✅ 接入 Airbnb MCP server</li>
-              <li>✅ 用 Workflow 串联 planner → responder</li>
               <li>✅ 用 Skills 扩展 Agent</li>
+              <li>✅ 用 Workflow 串联 planner → responder</li>
             </ul>
             <h3>常见问题 · Troubleshooting</h3>
             <table>
